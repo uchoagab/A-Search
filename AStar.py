@@ -72,7 +72,18 @@ direct_dist_map = [
 for station in range(14):
     city_trails.add_node(station + 1)
 
-
+#Função heuristica
+def directDistance(inicial, final) -> float:
+    try:
+        value = direct_dist[inicial][final]
+        return value * 2
+    except TypeError:
+        try:
+            value = direct_dist[final][inicial]
+            return value * 2
+        except Exception:
+            print("Could not calculate the distance")
+            
 """
 #Criação das arestas
 for station_a in range(14):
