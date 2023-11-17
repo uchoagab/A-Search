@@ -1,14 +1,20 @@
 import networkx as nx
 
+#entrada: estado inicial (estação/cor)
+#saída: estado final, custo da fronteira/interação
+#vel. m. trem = 0.5km/h; t = d*2
+
 city_trails = nx.Graph()
+frontier = list()
 
 
-true_dist = [
+"""
+true_dist_map = [
             #E1 E2   E3    E4    E5    E6    E7    E8    E9   E10   E11   E12   E13   14
             [0, 10, None, None, None, None, None, None, None, None, None, None, None, None],    #E1
             [None, 0, 8.5, None, None, None, None, None, 10, 3.5, None, None, None, None],      #E2
             [None, None, 0, 6.3, None, None, None, None, 9.4, None, None, None, 18.7, None],    #E3
-            [None, None, None, 0, 13, None, None, 15.3, None, None, None, None, 12.8, 11],      #E4
+            [None, None, None, 0, 13, None, None, 15.3, None, None, None, None, 12.8, None],    #E4
             [None, None, None, None, 0, 3, 2.4, 30, None, None, None, None, None, None],        #E5
             [None, None, None, None, None, 0, None, None, None, None, None, None, None, None],  #E6
             [None, None, None, None, None, None, 0, None, None, None, None, None, None, None],  #E7
@@ -20,8 +26,29 @@ true_dist = [
             [None, None, None, None, None, None, None, None, None, None, None, None, 0, 5.1],   #E13
             [None, None, None, None, None, None, None, None, None, None, None, None, None, 0],  #E14
             ]
+"""
 
-direct_dist = [
+
+city_trails.add_edge(1, 2, weight = 10, color="blue")
+city_trails.add_edge(2, 3, weight = 8.5, color="blue")
+city_trails.add_edge(2, 9, weight = 10, color="yellow")
+city_trails.add_edge(2, 10, weight = 3.5, color="yellow")
+city_trails.add_edge(3, 4, weight = 6.3, color="blue")
+city_trails.add_edge(3, 9, weight = 9.4, color="red")
+city_trails.add_edge(3, 13, weight = 18.7, color="red")
+city_trails.add_edge(4, 5, weight = 13, color="red")
+city_trails.add_edge(4, 8, weight = 15.3, color="green")
+city_trails.add_edge(4, 13, weight = 12.8, color="green")
+city_trails.add_edge(5, 6, weight = 3, color="blue")
+city_trails.add_edge(5, 7, weight = 2.4, color="yellow")
+city_trails.add_edge(5, 8, weight = 30, color="yellow")
+city_trails.add_edge(8, 9, weight = 9.6, color="yellow")
+city_trails.add_edge(8, 12, weight = 6.4, color="green")
+city_trails.add_edge(9, 11, weight = 12.2, color="red")
+city_trails.add_edge(13, 14, weight = 5.1, color="green")
+
+
+direct_dist_map = [
             #E1 E2   E3    E4    E5    E6    E7    E8    E9   E10   E11   E12   E13   14
             [0, 10, 18.5, 24.8, 36.4, 38.8, 35.8, 25.4, 17.6, 9.1, 16.7, 27.3, 27.6, 29.8],     #E1
             [None, 0, 8.5, 14.8, 26.6, 29.1, 26.1, 17.3, 10, 3.5, 15.5, 20.9, 19.1, 21.8],      #E2
@@ -39,16 +66,24 @@ direct_dist = [
             [None, None, None, None, None, None, None, None, None, None, None, None, None, 0],  #E14
             ]
 
+
+
 #Criação dos vértices
 for station in range(14):
     city_trails.add_node(station + 1)
 
+
+"""
 #Criação das arestas
 for station_a in range(14):
     for station_b in range(14):
-        station_curr = true_dist[station_a][station_b]
+        station_curr = true_dist_map[station_a][station_b]
 
         if not (station_curr == None or station_curr == 0):
             city_trails.add_edge(station_a + 1, station_b + 1, weight = int(station_curr))
+"""
 
+#   city_trails[1][2]["color"] = "blue"
+print(dict(city_trails[1][2]))
 print(list(city_trails.edges))
+#   print(list(nx.neighbors(city_trails, 7)))
