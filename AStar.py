@@ -31,23 +31,23 @@ for station in range(14):
     city_trails.add_node(station + 1)
 
 #(edge1, edge2, weight, color)
-edge_list = [(1, 2, 10, "blue"),
-            (2, 3, 8.5, "blue"),
-            (2, 9, 10, "yellow"),
-            (2, 10, 3.5, "yellow"),
-            (3, 4, 6.3, "blue"),
-            (3, 9,9.4, "red"),
-            (3, 13, 18.7, "red"),
-            (4, 5, 13, "red"),
-            (4, 8, 15.3, "green"),
-            (4, 13, 12.8, "green"),
-            (5, 6, 3, "blue"),
-            (5, 7, 2.4, "yellow"),
-            (5, 8, 30, "yellow"),
-            (8, 9, 9.6, "yellow"),
-            (8, 12, 6.4, "green"),
-            (9, 11, 12.2, "red"),
-            (13, 14, 5.1, "green"),
+edge_list = [(1, 2, 10, "azul"),
+            (2, 3, 8.5, "azul"),
+            (2, 9, 10, "amarela"),
+            (2, 10, 3.5, "amarela"),
+            (3, 4, 6.3, "azul"),
+            (3, 9,9.4, "vermelha"),
+            (3, 13, 18.7, "vermelha"),
+            (4, 5, 13, "vermelha"),
+            (4, 8, 15.3, "verde"),
+            (4, 13, 12.8, "verde"),
+            (5, 6, 3, "azul"),
+            (5, 7, 2.4, "amarela"),
+            (5, 8, 30, "amarela"),
+            (8, 9, 9.6, "amarela"),
+            (8, 12, 6.4, "verde"),
+            (9, 11, 12.2, "vermelha"),
+            (13, 14, 5.1, "verde"),
             ]
 
 #Criação das arestas
@@ -74,7 +74,7 @@ def astar_with_line_change(start, end, corInicial, graph = city_trails):
 
     while frontier:
         current_cost, current_node, current_line = heapq.heappop(frontier)
-        print("Indo para estação:", current_node, "com custo:", current_cost, "na linha:", current_line)
+        print(f"\n\nIndo para estação:", current_node, "com custo:", current_cost, "na linha:", current_line)
 
         if current_node == end:
             break
@@ -97,12 +97,51 @@ def astar_with_line_change(start, end, corInicial, graph = city_trails):
                 cost_so_far[next_node] = new_cost
                 priority = new_cost + directDistance(next_node, end)
                 heapq.heappush(frontier, (priority, next_node, edge_data['color']))
+                frontier = heapq.nsmallest(len(frontier), frontier)   #Sort na fronteira
                 came_from[next_node] = current_node
+
+        result = [(tuple[1], tuple[0]) for tuple in frontier]
+        print("Fronteira:\n" + str(result))
+
+    print("_____________________________________________________________")
 
     return came_from, cost_so_far
 
-start_station = 2
-goal_station = 13
+#Consulta o caminho percorrido no grafo
+def recursive_search(dict, start, end, path):
+    path.insert(0, end)
+    if dict[end] == None:
+        return path
+    else:
+        return recursive_search(dict, start, dict[end], path)
+    
 
-came_from, cost_so_far = astar_with_line_change(start_station, goal_station, "yellow")
+def main() -> None:   
+    maintain = 1
 
+    while maintain:
+        start_station = int(input("Qual a estação de partida? "))
+        goal_station = int(input("Qual a estação de destino? "))
+        path = list()
+
+        came_from, cost_so_far = astar_with_line_change(start_station, goal_station, None)
+        
+        print(f"\nCaminho percorrido: " + str(recursive_search(came_from, start_station, goal_station, path)))
+        print("Tempo gasto: {:.2f} minutos\n".format(cost_so_far[goal_station]))
+
+        ans = None
+        while ans not in ("Y", "N"):
+            try:
+                ans = input("Deseja consultar outra viagem?(Y/N) ").upper()
+                if ans == "Y":
+                    maintain = 1
+                elif ans == "N":
+                    maintain = 0
+            except:
+                pass
+    
+    return 0
+
+
+if __name__ == '__main__':
+         main()
