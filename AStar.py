@@ -1,4 +1,5 @@
 import networkx as nx
+import heapq
 
 #entrada: estado inicial (estação/cor)
 #saída: estado final, custo da fronteira/interação
@@ -55,18 +56,53 @@ for edge in edge_list:
 
 
 #Função heuristica
-def directDistance(inicial, final) -> float:
+def directDistance(startStation: int, finalStation: int) -> float:
     try:
-        value = direct_dist_map[inicial - 1][final - 1]
+        value = direct_dist_map[startStation - 1][finalStation - 1]
         return value * 2
     except TypeError:
         try:
-            value = direct_dist_map[final - 1][inicial - 1]
+            value = direct_dist_map[finalStation - 1][startStation - 1]
             return value * 2
         except Exception:
             print("Could not calculate the distance")
-            
-#   city_trails[1][2]["color"] = "blue"
-#   print(dict(city_trails[1][2]))
-#   print(list(city_trails.edges))
-#   print(list(nx.neighbors(city_trails, 7)))
+
+def astar_with_line_change(start, end, corInicial, graph = city_trails):
+    frontier = [(0, start, corInicial)]
+    came_from = {start: None}
+    cost_so_far = {start: 0}
+
+    while frontier:
+        current_cost, current_node, current_line = heapq.heappop(frontier)
+        print("Indo para estação:", current_node, "com custo:", current_cost, "na linha:", current_line)
+
+        if current_node == end:
+            break
+
+        neighbors = graph[current_node]
+        print("Vizinhos:")
+
+        for next_node, edge_data in neighbors.items():
+            new_cost = cost_so_far[current_node] + (edge_data['weight']/0.5)
+            line_change_cost = 4  # Tempo de baldeação em minutos
+
+            # Adiciona o tempo de baldeação se estiver mudando de linha
+            if current_line and edge_data['color'] != current_line:
+                new_cost += line_change_cost
+
+            total_cost = new_cost + directDistance(next_node, end)
+            print(f"  {next_node}: g(x) = {new_cost} | h(x) = {directDistance(next_node, end)} | f(x) = {total_cost}")
+
+            if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
+                cost_so_far[next_node] = new_cost
+                priority = new_cost + directDistance(next_node, end)
+                heapq.heappush(frontier, (priority, next_node, edge_data['color']))
+                came_from[next_node] = current_node
+
+    return came_from, cost_so_far
+
+start_station = 2
+goal_station = 13
+
+came_from, cost_so_far = astar_with_line_change(start_station, goal_station, "yellow")
+
