@@ -30,6 +30,14 @@ frontier = list()
 for station in range(14):
     city_trails.add_node(station + 1)
 
+transfer_list = { 2: ["amarela","azul"], 
+                  3: ["azul","vermelha"], 
+                  4: ["azul","verde"], 
+                  5: ["azul","amarela"],
+                  8: ["amarela","verde"], 
+                  9: ["amarela","vermelha"], 
+                  13: ["verde","vermelha"]}
+
 #(edge1, edge2, weight, color)
 edge_list = [(1, 2, 10, "azul"),
             (2, 3, 8.5, "azul"),
@@ -67,38 +75,45 @@ def directDistance(startStation: int, finalStation: int) -> float:
         except Exception:
             print("Could not calculate the distance")
 
-def astar_with_line_change(start, end, corInicial, graph = city_trails):
-    frontier = [(0, start, corInicial)]
+def astar_with_line_change(start, end, inicial_color, final_color, graph = city_trails):
+    frontier = [(0, start, inicial_color)]
     came_from = {start: None}
     cost_so_far = {start: 0}
+    line_change_cost = 4  # Tempo de baldeação em minutos
+    last_color = None
 
     while frontier:
         current_cost, current_node, current_line = heapq.heappop(frontier)
+        
         print(f"\n\nIndo para estação:", current_node, "com custo:", current_cost, "na linha:", current_line)
 
-        if current_node == end:
+        if current_node == end and current_line == final_color:
             break
 
-        neighbors = graph[current_node]
+        neighbors = dict(graph[current_node])  # Criar uma cópia do dicionário para evitar problemas de mutabilidade
         print("Vizinhos:")
-
+        if current_node in transfer_list.keys():
+            if(current_line == transfer_list[current_node][0]):
+                neighbors[current_node] = {'weight': 0, 'color': transfer_list[current_node][1]}
+            
         for next_node, edge_data in neighbors.items():
-            new_cost = cost_so_far[current_node] + (edge_data['weight']/0.5)
-            line_change_cost = 4  # Tempo de baldeação em minutos
+            new_cost = cost_so_far[current_node] + (edge_data['weight'] / 0.5)
 
             # Adiciona o tempo de baldeação se estiver mudando de linha
-            if current_line and edge_data['color'] != current_line:
+            if current_node in transfer_list.keys() and current_node == next_node:
                 new_cost += line_change_cost
 
-            total_cost = new_cost + directDistance(next_node, end)
-            print(f"  {next_node}: g(x) = {new_cost} | h(x) = {directDistance(next_node, end)} | f(x) = {total_cost}")
 
-            if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
-                cost_so_far[next_node] = new_cost
-                priority = new_cost + directDistance(next_node, end)
-                heapq.heappush(frontier, (priority, next_node, edge_data['color']))
-                frontier = heapq.nsmallest(len(frontier), frontier)   #Sort na fronteira
-                came_from[next_node] = current_node
+            if (edge_data['color'] == current_line and current_node != next_node) or current_node == next_node:
+                total_cost = new_cost + directDistance(next_node, end)
+                print(f"  {next_node}: g(x) = {new_cost} | h(x) = {directDistance(next_node, end)} | f(x) = {total_cost}  | aresta conexão {edge_data['color']}")
+                if (next_node not in cost_so_far or next_node == current_node) or (new_cost < cost_so_far[next_node]):
+                    cost_so_far[next_node] = new_cost
+                    priority = new_cost + directDistance(next_node, end)
+                    heapq.heappush(frontier, (priority, next_node, edge_data['color']))
+                    frontier = heapq.nsmallest(len(frontier), frontier)  # Sort na fronteira
+                    print(f"teste {next_node} -> {current_node}")
+                    came_from[next_node] = current_node
 
         result = [(tuple[1], tuple[0]) for tuple in frontier]
         print("Fronteira:\n" + str(result))
@@ -120,14 +135,17 @@ def main() -> None:
     maintain = 1
 
     while maintain:
-        start_station = int(input("Qual a estação de partida? "))
-        goal_station = int(input("Qual a estação de destino? "))
+        # start_station = int(input("Qual a estação de partida? "))
+        # inicial_color = input("Qual cor da estação inicial? ")
+        # goal_station = int(input("Qual a estação de destino? "))
+        # final_color = input("Qual cor da estação final? ")
+
         path = list()
 
-        came_from, cost_so_far = astar_with_line_change(start_station, goal_station, None)
+        came_from, cost_so_far = astar_with_line_change(2, 13,"amarela","vermelha")
         
-        print(f"\nCaminho percorrido: " + str(recursive_search(came_from, start_station, goal_station, path)))
-        print("Tempo gasto: {:.2f} minutos\n".format(cost_so_far[goal_station]))
+        #print(f"\nCaminho percorrido: " + str(recursive_search(came_from, 2, 13, path)))
+        #print("Tempo gasto: {:.2f} minutos\n".format(cost_so_far[13]))
 
         ans = None
         while ans not in ("Y", "N"):
