@@ -77,10 +77,10 @@ def directDistance(startStation: int, finalStation: int) -> float:
 
 def astar_with_line_change(start, end, inicial_color, final_color, graph = city_trails):
     frontier = [(0, start, inicial_color)]
+    lastFrontier = None
     came_from = {start: None}
     cost_so_far = {start: 0}
     line_change_cost = 4  # Tempo de baldeação em minutos
-    last_color = None
 
     while frontier:
         current_cost, current_node, current_line = heapq.heappop(frontier)
@@ -112,8 +112,22 @@ def astar_with_line_change(start, end, inicial_color, final_color, graph = city_
                     priority = new_cost + directDistance(next_node, end)
                     heapq.heappush(frontier, (priority, next_node, edge_data['color']))
                     frontier = heapq.nsmallest(len(frontier), frontier)  # Sort na fronteira
-                    print(f"teste {next_node} -> {current_node}")
                     came_from[next_node] = current_node
+            last_node = current_node
+
+        if lastFrontier is not None:
+            temp_frontier = frontier.copy()
+            for item in lastFrontier:
+                if item not in temp_frontier:
+                    temp_frontier.append(item)
+            frontier = temp_frontier
+
+        while frontier[0][2] != current_line and frontier[0][1] != last_node:
+            val = heapq.heappop(frontier)
+            temp_list = frontier.copy()
+            temp_list.append(val)
+            frontier = temp_list
+            lastFrontier = frontier
 
         result = [(tuple[1], tuple[0]) for tuple in frontier]
         print("Fronteira:\n" + str(result))
