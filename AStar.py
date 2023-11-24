@@ -46,7 +46,7 @@ edge_list = [(1, 2, 10, "azul"),
             (3, 4, 6.3, "azul"),
             (3, 9,9.4, "vermelha"),
             (3, 13, 18.7, "vermelha"),
-            (4, 5, 13, "vermelha"),
+            (4, 5, 13, "azul"),
             (4, 8, 15.3, "verde"),
             (4, 13, 12.8, "verde"),
             (5, 6, 3, "azul"),
@@ -95,6 +95,8 @@ def astar_with_line_change(start, end, inicial_color, final_color, graph = city_
         if current_node in transfer_list.keys():
             if(current_line == transfer_list[current_node][0]):
                 neighbors[current_node] = {'weight': 0, 'color': transfer_list[current_node][1]}
+            else:
+                neighbors[current_node] = {'weight': 0, 'color': transfer_list[current_node][0]}
             
         for next_node, edge_data in neighbors.items():
             new_cost = cost_so_far[current_node] + (edge_data['weight'] / 0.5)
@@ -111,9 +113,10 @@ def astar_with_line_change(start, end, inicial_color, final_color, graph = city_
                     cost_so_far[next_node] = new_cost
                     priority = new_cost + directDistance(next_node, end)
                     heapq.heappush(frontier, (priority, next_node, edge_data['color']))
-                    frontier = heapq.nsmallest(len(frontier), frontier)  # Sort na fronteira
-                    came_from[next_node] = current_node
+                    if next_node != current_node:
+                        came_from[next_node] = current_node
             last_node = current_node
+            frontier = heapq.nsmallest(len(frontier), frontier)  # Sort na fronteira
 
         if lastFrontier is not None:
             temp_frontier = frontier.copy()
@@ -122,12 +125,6 @@ def astar_with_line_change(start, end, inicial_color, final_color, graph = city_
                     temp_frontier.append(item)
             frontier = temp_frontier
 
-        while frontier[0][2] != current_line and frontier[0][1] != last_node:
-            val = heapq.heappop(frontier)
-            temp_list = frontier.copy()
-            temp_list.append(val)
-            frontier = temp_list
-            lastFrontier = frontier
 
         result = [(tuple[1], tuple[0]) for tuple in frontier]
         print("Fronteira:\n" + str(result))
@@ -149,17 +146,17 @@ def main() -> None:
     maintain = 1
 
     while maintain:
-        # start_station = int(input("Qual a estação de partida? "))
-        # inicial_color = input("Qual cor da estação inicial? ")
-        # goal_station = int(input("Qual a estação de destino? "))
-        # final_color = input("Qual cor da estação final? ")
+        start_station = int(input("Qual a estação de partida? "))
+        inicial_color = input("Qual cor da estação inicial? ")
+        goal_station = int(input("Qual a estação de destino? "))
+        final_color = input("Qual cor da estação final? ")
 
         path = list()
 
-        came_from, cost_so_far = astar_with_line_change(2, 13,"amarela","vermelha")
+        came_from, cost_so_far = astar_with_line_change(start_station, goal_station,inicial_color,final_color)
         
-        #print(f"\nCaminho percorrido: " + str(recursive_search(came_from, 2, 13, path)))
-        #print("Tempo gasto: {:.2f} minutos\n".format(cost_so_far[13]))
+        print(f"\nCaminho percorrido: " + str(recursive_search(came_from, start_station, goal_station, path)))
+        print("Tempo gasto: {:.2f} minutos\n".format(cost_so_far[goal_station]))
 
         ans = None
         while ans not in ("Y", "N"):
