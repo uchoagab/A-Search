@@ -6,7 +6,7 @@ import heapq
 #vel. m. trem = 0.5km/h; t = d*2
 
 direct_dist_map = [
-            #E1 E2   E3    E4    E5    E6    E7    E8    E9   E10   E11   E12   E13   14
+            #E1 E2   E3    E4    E5    E6    E7    E8    E9   E10   E11   E12   E13   E14
             [0, 10, 18.5, 24.8, 36.4, 38.8, 35.8, 25.4, 17.6, 9.1, 16.7, 27.3, 27.6, 29.8],     #E1
             [None, 0, 8.5, 14.8, 26.6, 29.1, 26.1, 17.3, 10, 3.5, 15.5, 20.9, 19.1, 21.8],      #E2
             [None, None, 0, 6.3, 18.2, 20.6, 17.6, 13.6, 9.4, 10.3, 19.5, 19.1, 12.1, 16.6],    #E3
@@ -80,6 +80,7 @@ def astar_with_line_change(start, end, inicial_color, final_color, graph = city_
     lastFrontier = None
     came_from = {start: None}
     cost_so_far = {start: 0}
+    transfer_check = {x: False for x in transfer_list.keys()}
     line_change_cost = 4  # Tempo de baldeação em minutos
 
     while frontier:
@@ -109,12 +110,14 @@ def astar_with_line_change(start, end, inicial_color, final_color, graph = city_
             if (edge_data['color'] == current_line and current_node != next_node) or current_node == next_node:
                 total_cost = new_cost + directDistance(next_node, end)
                 print(f"  {next_node}: g(x) = {new_cost} | h(x) = {directDistance(next_node, end)} | f(x) = {total_cost}  | aresta conexão {edge_data['color']}")
-                if (next_node not in cost_so_far or next_node == current_node) or (new_cost < cost_so_far[next_node]):
+                if (next_node == current_node and transfer_check[current_node] != True) or (next_node not in cost_so_far or new_cost < cost_so_far[next_node]):
                     cost_so_far[next_node] = new_cost
                     priority = new_cost + directDistance(next_node, end)
                     heapq.heappush(frontier, (priority, next_node, edge_data['color']))
                     if next_node != current_node:
                         came_from[next_node] = current_node
+                    elif next_node == current_node:
+                        transfer_check[current_node] = True
             last_node = current_node
             frontier = heapq.nsmallest(len(frontier), frontier)  # Sort na fronteira
 
